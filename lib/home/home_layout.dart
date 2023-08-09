@@ -1,13 +1,10 @@
 import 'package:cashflow_rdi/login/login.dart';
-import 'package:cashflow_rdi/login/login_moodel.dart';
 import 'package:cashflow_rdi/summary/summary.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeLayout extends StatelessWidget {
-  const HomeLayout({super.key, required this.loginData, required this.token});
-
-  final LoginDataObject loginData;
-  final String token;
+  const HomeLayout({super.key});
 
   static const appTitle = 'Drawer Menu';
 
@@ -19,22 +16,15 @@ class HomeLayout extends StatelessWidget {
           primaryColor: Colors.deepOrange,
           listTileTheme:
               const ListTileThemeData(selectedColor: Colors.deepOrange)),
-      home:
-          MyHomePage(title: appTitle, loginDataObject: loginData, token: token),
+      home: const MyHomePage(title: appTitle),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage(
-      {super.key,
-      required this.title,
-      required this.loginDataObject,
-      required this.token});
+  const MyHomePage({super.key, required this.title});
 
   final String title;
-  final String token;
-  final LoginDataObject loginDataObject;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -46,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
-    SummaryPage(data: "Ringakasan"),
+    SummaryPage(),
     Text(
       'Index 1: Operasional',
       style: optionStyle,
@@ -77,6 +67,16 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<bool> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    if (prefs.getString('token') == null) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   String greeting() {
@@ -131,13 +131,6 @@ class _MyHomePageState extends State<MyHomePage> {
           }
           break;
         }
-      case == 6:
-        {
-          {
-            title = 'Keluar';
-          }
-          break;
-        }
     }
     return Scaffold(
       appBar: AppBar(title: Text(title), backgroundColor: Colors.deepOrange),
@@ -152,8 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
               decoration: const BoxDecoration(
                 color: Colors.deepOrange,
               ),
-              child: Text(
-                  'Selamat ${greeting()} ${widget.loginDataObject.email} ${widget.token}',
+              child: Text('Selamat ${greeting()}',
                   style: const TextStyle(fontSize: 20, color: Colors.white)),
             ),
             ListTile(
@@ -226,17 +218,57 @@ class _MyHomePageState extends State<MyHomePage> {
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Keluar'),
-              selected: _selectedIndex == 6,
-              onTap: () {
-                // Update the state of the app
-                _onItemTapped(6);
-                // Then close the drawer
-                Navigator.pop(context);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LoginPages()));
-              },
+              onTap: () => showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => Dialog(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: SizedBox(
+                            height: 100,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                    margin:
+                                        const EdgeInsets.fromLTRB(8, 8, 0, 0),
+                                    child: const Text(
+                                        'Apakah anda yakin ingin keluar ?')),
+                                Container(
+                                  margin:
+                                      const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                          onPressed: () => {
+                                                logout(),
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          // HomeLayout(loginData: data.data, token: value!)
+                                                          const LoginPages()),
+                                                )
+                                              },
+                                          child: const Text('Ya',
+                                              style: TextStyle(
+                                                  color: Colors.deepOrange))),
+                                      TextButton(
+                                          onPressed: () =>
+                                              {Navigator.pop(context)},
+                                          child: const Text('Tidak',
+                                              style: TextStyle(
+                                                  color: Colors.deepOrange)))
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      )),
             ),
           ],
         ),

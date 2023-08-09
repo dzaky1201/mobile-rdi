@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:cashflow_rdi/home/home_layout.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_moodel.dart';
+import 'login_model.dart';
 import 'package:http/http.dart' as http;
 
 class LoginPages extends StatelessWidget {
@@ -74,7 +73,11 @@ class _LoginFormState extends State<LoginForm> {
       });
       return LoginResponse.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to login');
+      setState(() {
+        _loading = false;
+      });
+      debugPrint(response.body);
+      return LoginResponse.fromJson(jsonDecode(response.body));
     }
   }
 
@@ -172,14 +175,19 @@ class _LoginFormState extends State<LoginForm> {
                               if (data.code == 200)
                                 {
                                   setToken(data.data.token).then((value) => {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              HomeLayout(loginData: data.data, token: value!)),
-                                    )
-                                  }),
-
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  // HomeLayout(loginData: data.data, token: value!)
+                                                  const HomeLayout()),
+                                        )
+                                      }),
+                                },
+                              if (data.code == 405)
+                                {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(data.status)))
                                 }
                             });
                       });

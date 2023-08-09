@@ -8,7 +8,7 @@ class LoginDataObject {
 
   factory LoginDataObject.fromJson(Map<String, dynamic> json){
     return LoginDataObject(
-        id: json['id'], email: json['email'], token: json['token']);
+        id: json['id'] ?? 0, email: json['email'] ?? "", token: json['token'] ?? "");
   }
 }
 
