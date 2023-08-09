@@ -1,11 +1,11 @@
 class SummaryDataObject {
-  final List<AllData> allData;
+  final List<AllData>? allData;
 
   const SummaryDataObject(
       {required this.allData});
 
   factory SummaryDataObject.fromJson(Map<String, dynamic> json){
-    return SummaryDataObject(allData: (json['allData'] as List).map((data)=>AllData.fromJson(data)).toList());
+    return SummaryDataObject(allData: json['allData'] != null ? (json['allData'] as List).map((data)=>AllData.fromJson(data)).toList() : []);
   }
 }
 

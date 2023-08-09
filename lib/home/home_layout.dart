@@ -1,5 +1,5 @@
 import 'package:cashflow_rdi/login/login.dart';
-import 'package:cashflow_rdi/summary/summary.dart';
+import 'package:cashflow_rdi/summary/presentation/pages/summary.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
