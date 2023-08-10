@@ -1,6 +1,9 @@
+import 'package:cashflow_rdi/home/presentation/entities/register_request_model.dart';
+import 'package:cashflow_rdi/home/respository/home_repository.dart';
 import 'package:cashflow_rdi/login/login.dart';
 import 'package:cashflow_rdi/summary/presentation/pages/summary.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeLayout extends StatelessWidget {
@@ -21,18 +24,41 @@ class HomeLayout extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends ConsumerState<MyHomePage> {
   int _selectedIndex = 0;
   var title = '';
+
+  var homeRepository = HomeRepository();
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _name = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+
+  final textFieldFocusNode = FocusNode();
+  bool _obscured = true;
+
+  void _toggleObscured() {
+    setState(() {
+      _obscured = !_obscured;
+      if (textFieldFocusNode.hasPrimaryFocus) {
+        return; // If focus is on text field, dont unfocus
+      }
+      textFieldFocusNode.canRequestFocus =
+          false; // Prevents focus if tap on eye
+    });
+  }
+
   static const TextStyle optionStyle =
       TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   static const List<Widget> _widgetOptions = <Widget>[
@@ -77,6 +103,117 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       return false;
     }
+  }
+
+  Future<void> _showMyDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Tambah user'),
+          content: SingleChildScrollView(
+            child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: _name,
+                      validator: (value) {
+                        return value!.isNotEmpty ? null : "Masukan nama !";
+                      },
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          label: Text('nama'),
+                          hintText: "Isikan nama"),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      child: TextFormField(
+                        controller: _email,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          return value!.isNotEmpty ? null : "Masukan email !";
+                        },
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            label: Text('email'),
+                            hintText: "Isikan email"),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      child: TextFormField(
+                        controller: _password,
+                        keyboardType: TextInputType.visiblePassword,
+                        obscureText: _obscured,
+                        validator: (value) {
+                          return value!.isNotEmpty
+                              ? null
+                              : "Masukan password !";
+                        },
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          label: const Text('password'),
+                          hintText: "masukan password",
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
+                            child: GestureDetector(
+                              onTap: _toggleObscured,
+                              child: Icon(
+                                _obscured
+                                    ? Icons.visibility_off_rounded
+                                    : Icons.visibility_rounded,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Text(_nameValue)
+                  ],
+                )),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Batal'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _name.text = '';
+                _email.text = '';
+                _password.text = '';
+              },
+            ),
+            TextButton(
+              child: const Text('Tambah user'),
+              onPressed: () {
+                setState(() {
+                  homeRepository
+                      .registerAccount(RegisterRequestModel(
+                          name: _name.text.trim(),
+                          email: _email.text.trim(),
+                          password: _password.text))
+                      .then((value) {
+                    if (value.code == 200) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(const SnackBar(content: Text('User berhasil ditambahkan')));
+                    } else {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(value.status)));
+                      Navigator.of(context).pop();
+                    }
+                  });
+                });
+                // signUp();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String greeting() {
@@ -197,11 +334,10 @@ class _MyHomePageState extends State<MyHomePage> {
               leading: const Icon(Icons.people),
               title: const Text('Akun'),
               selected: _selectedIndex == 4,
-              onTap: () {
-                // Update the state of the app
-                _onItemTapped(4);
-                // Then close the drawer
-                Navigator.pop(context);
+              onTap: () async {
+                setState(() async {
+                  await _showMyDialog();
+                });
               },
             ),
             ListTile(

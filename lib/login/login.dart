@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:cashflow_rdi/home/home_layout.dart';
+import 'package:cashflow_rdi/home/presentation/pages/home_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_model.dart';
@@ -76,7 +76,6 @@ class _LoginFormState extends State<LoginForm> {
       setState(() {
         _loading = false;
       });
-      debugPrint(response.body);
       return LoginResponse.fromJson(jsonDecode(response.body));
     }
   }

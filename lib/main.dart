@@ -1,4 +1,4 @@
-import 'package:cashflow_rdi/home/home_layout.dart';
+import 'package:cashflow_rdi/home/presentation/pages/home_layout.dart';
 import 'package:cashflow_rdi/login/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';

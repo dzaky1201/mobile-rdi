@@ -30,92 +30,96 @@ class _SummaryPageViewState extends ConsumerState<_SummaryPageView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(children: [
-      ref.watch(getPeriodProvider).when(
-          data: (data) {
-            if(data.data.isEmpty){
-              yearSelectedValue = '';
-            }
-           return Container(
-              margin: const EdgeInsets.fromLTRB(0, 10, 10, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton2<String>(
-                      isExpanded: true,
-                      hint: const Row(
-                        children: [
-                          SizedBox(
-                            width: 4,
-                          ),
-                          Expanded(
-                            child: Text(
-                              'year',
+        body: SingleChildScrollView(
+      child: Column(children: [
+        ref.watch(getPeriodProvider).when(
+            data: (data) {
+              if (data.data.isEmpty) {
+                yearSelectedValue = '';
+              }
+              return Container(
+                margin: const EdgeInsets.fromLTRB(0, 10, 10, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        isExpanded: true,
+                        hint: const Row(
+                          children: [
+                            SizedBox(
+                              width: 4,
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Text(
+                                'year',
+                              ),
+                            ),
+                          ],
+                        ),
+                        items: data.data
+                            .map(
+                                (PeriodObject item) => DropdownMenuItem<String>(
+                                      value: item.year,
+                                      child: Text(
+                                        item.year,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ))
+                            .toList(),
+                        value: yearSelectedValue,
+                        onChanged: (String? value) {
+                          setState(() {
+                            yearSelectedValue = value;
+                          });
+                        },
+                        buttonStyleData: ButtonStyleData(
+                            width: 100,
+                            height: 30,
+                            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(width: 1))),
                       ),
-                      items: data.data
-                          .map(
-                              (PeriodObject item) => DropdownMenuItem<String>(
-                            value: item.year,
-                            child: Text(
-                              item.year,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ))
-                          .toList(),
-                      value: yearSelectedValue,
-                      onChanged: (String? value) {
-                        setState(() {
-                          yearSelectedValue = value;
-                        });
-                      },
-                      buttonStyleData: ButtonStyleData(
-                          width: 100,
-                          height: 30,
-                          padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(width: 1))),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-          error: (error, _) => Text(error.toString()),
-          loading: () => const Visibility(visible: false, child: Text('Loading....'))),
-      ref.watch(summaryProvider(yearSelectedValue!)).when(
-          data: (data) {
-            if (data.data.allData!.isNotEmpty) {
-              return SfCartesianChart(
-                  primaryXAxis: CategoryAxis(),
-                  // Chart title
-                  title: ChartTitle(text: 'Data kas $yearSelectedValue'),
-                  // Enable legend
-                  legend: const Legend(isVisible: true),
-                  // Enable tooltip
-                  tooltipBehavior: TooltipBehavior(enable: true),
-                  series: <ChartSeries<AllData, String>>[
-                    LineSeries<AllData, String>(
-                        dataSource: data.data.allData!,
-                        xValueMapper: (AllData data, _) => data.month,
-                        yValueMapper: (AllData data, _) => data.total,
-                        name: 'Data kas $yearSelectedValue',
-                        // Enable data label
-                        dataLabelSettings:
-                            const DataLabelSettings(isVisible: true))
-                  ]);
-            } else {
-              return const Text('Tidak ada data');
-            }
-          },
-          error: (error, _) => Text(error.toString()),
-          loading: () => Container(
-            margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-              alignment: Alignment.center, child: const Text('Loading....')))
-    ]));
+                  ],
+                ),
+              );
+            },
+            error: (error, _) => Text(error.toString()),
+            loading: () =>
+                const Visibility(visible: false, child: Text('Loading....'))),
+        ref.watch(summaryProvider(yearSelectedValue!)).when(
+            data: (data) {
+              if (data.data.allData!.isNotEmpty) {
+                return SfCartesianChart(
+                    primaryXAxis: CategoryAxis(),
+                    // Chart title
+                    title: ChartTitle(text: 'Data kas $yearSelectedValue'),
+                    // Enable legend
+                    legend: const Legend(isVisible: true),
+                    // Enable tooltip
+                    tooltipBehavior: TooltipBehavior(enable: true),
+                    series: <ChartSeries<AllData, String>>[
+                      LineSeries<AllData, String>(
+                          dataSource: data.data.allData!,
+                          xValueMapper: (AllData data, _) => data.month,
+                          yValueMapper: (AllData data, _) => data.total,
+                          name: 'Data kas $yearSelectedValue',
+                          // Enable data label
+                          dataLabelSettings:
+                              const DataLabelSettings(isVisible: true))
+                    ]);
+              } else {
+                return const Text('Tidak ada data');
+              }
+            },
+            error: (error, _) => Text(error.toString()),
+            loading: () => Container(
+                margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                alignment: Alignment.center,
+                child: const Text('Loading....')))
+      ]),
+    ));
   }
 }
